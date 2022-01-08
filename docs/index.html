@@ -1,17 +1,5 @@
-<html>
-
+<html lang="en">
 <head>
-
-  <!--script src="//cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.8.3/dist/ffmpeg.min.js"></script-->
-  <script src="main.js" type="module"></script>
-  <script src="ffmpeg.0.8.3.min.js"></script>
-
-
-  <script>
-
-  </script>
-
-
   <style>
     html,
     body {
@@ -32,7 +20,8 @@
   <h3>Upload a video to transcode to mp4 (x264) and play!</h3>
   <video id="output-video" controls muted autoplay></video><br />
   <br>
-  <input type="file" id="uploader">
+  <label for="uploader">Press Here to Upload</label>
+  <input type="file" id="uploader" value="upload">
   <p id="message"></p>
   <br>
 
@@ -41,48 +30,60 @@
   </div>
 
   <br>
-  <script>
-    var txt = document.getElementById('log');
-    const {
-      createFFmpeg
-    } = FFmpeg;
-    const ffmpeg = createFFmpeg({
-      log: true,
-      logger: ({
-        message
-      }) => {
-        txt.value += "\n" + message;
-      }
-    });
-
-    const transcode = async ({
-      target: {
-        files
-      }
-    }) => {
-      const message = document.getElementById('message');
-      const {
-        name
-      } = files[0];
-      message.innerHTML = 'Loading ffmpeg-core.js';
-      await ffmpeg.load();
-      await ffmpeg.write(name, files[0]);
-      message.innerHTML = 'Start transcoding';
-      await ffmpeg.transcode(name, 'output.mp4');
-      message.innerHTML = 'Transcoding completed';
-      const data = ffmpeg.read('output.mp4');
-      ffmpeg.remove('output.mp4');
-
-      const video = document.getElementById('output-video');
-      video.src = URL.createObjectURL(new Blob([data.buffer], {
-        type: 'video/mp4'
-      }));
-
-
-    }
-    const elm = document.getElementById('uploader');
-    elm.addEventListener('change', transcode);
-  </script>
 </body>
+
+
+
+<!-- NOTE MUST IMPORT MAIN FIRST SO THAT NETWORK HOOKS CAN BE LOADED-->
+<script src="main.js" type="module"></script>
+<!-- Now cross orogin should work ok -->
+<!--script src="//cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.8.3/dist/ffmpeg.min.js"></script-->
+<script src="ffmpeg.0.8.3.min.js"></script>
+
+<!-- NOTE this is the version without shared array buffer https://github.com/Kagami/ffmpeg.js/ -->
+
+<script>
+  var txt = document.getElementById('log');
+  const {
+    createFFmpeg
+  } = FFmpeg;
+  const ffmpeg = createFFmpeg({
+    log: true,
+    logger: ({
+      message
+    }) => {
+      txt.value += "\n" + message;
+    }
+  });
+
+  const transcode = async ({
+    target: {
+      files
+    }
+  }) => {
+    const message = document.getElementById('message');
+    const {
+      name
+    } = files[0];
+    message.innerHTML = 'Loading ffmpeg-core.js';
+    await ffmpeg.load();
+    await ffmpeg.write(name, files[0]);
+    message.innerHTML = 'Start transcoding';
+    await ffmpeg.transcode(name, 'output.mp4');
+    message.innerHTML = 'Transcoding completed';
+    const data = ffmpeg.read('output.mp4');
+    ffmpeg.remove('output.mp4');
+
+    const video = document.getElementById('output-video');
+    video.src = URL.createObjectURL(new Blob([data.buffer], {
+      type: 'video/mp4'
+    }));
+
+
+  }
+  const elm = document.getElementById('uploader');
+  elm.addEventListener('change', transcode);
+</script>
+
 
 </html>
