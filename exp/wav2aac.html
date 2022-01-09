@@ -25,14 +25,26 @@
           href="https://archive.org/download/ffmpeg_asm/ffmpeg_asm.js" download="ffmpeg-asm.js">ffmpeg-asm.js</a>!</h2>
 
       <div class="inner">
-        <audio id="audio-preview" controls muted></audio>
-        <br>
-        <button id="record-audio">Record</button>
-        <button id="stop-recording-audio" disabled>Stop</button>
+        <label for="btn_load_audio">Upload Audio (*.wav):</label>
+        <input type="file" id="btn_load_audio" accept=".wav"></input></br>
         <br>
       </div>
     </section>
     <script src="main.js"></script>
+    <script>
+      const dom_btn_load_audio = document.getElementById("btn_load_audio");
+      function load_audio_data(array_buffer) {
+        const uint8_array = new Uint8Array(array_buffer);
+        console.log("got audio: ", uint8_array);
+        //on_audio(array_buffer);
+        log('<a href="' + workerPath + '" download="ffmpeg-asm.js">ffmpeg-asm.js</a> file download started. It is about 18MB in size; please be patient!');
+        convertStreams(uint8_array, true);
+      }
+      dom_btn_load_audio.onchange = (evt) => {
+        const file = dom_btn_load_audio.files[0];
+        file.arrayBuffer().then(load_audio_data);
+      };
+    </script>
   </article>
 </body>
 
