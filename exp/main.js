@@ -1,3 +1,6 @@
+const workerPath = 'https://archive.org/download/ffmpeg_asm/ffmpeg_asm.js';
+
+
 var recordAudio;
 var audioPreview = document.getElementById('audio-preview');
 var inner = document.querySelector('.inner');
@@ -47,18 +50,19 @@ document.querySelector('#stop-recording-audio').onclick = function () {
   });
 };
 
-var workerPath = 'https://archive.org/download/ffmpeg_asm/ffmpeg_asm.js';
+//
 //var workerPath = 'ffmpeg_asm.js'
 //if(document.domain == 'localhost') {
 //	workerPath = location.href.replace(location.href.split('/').pop(), '') + 'ffmpeg_asm.js';
 //}
 
 function processInWebWorker() {
+  // Generate an import script based on the worker path.
   var blob = URL.createObjectURL(new Blob(['importScripts("' + workerPath + '");var now = Date.now;function print(text) {postMessage({"type" : "stdout","data" : text});};onmessage = function(event) {var message = event.data;if (message.type === "command") {var Module = {print: print,printErr: print,files: message.files || [],arguments: message.arguments || [],TOTAL_MEMORY: message.TOTAL_MEMORY || false};postMessage({"type" : "start","data" : Module.arguments.join(" ")});postMessage({"type" : "stdout","data" : "Received command: " +Module.arguments.join(" ") +((Module.TOTAL_MEMORY) ? ".  Processing with " + Module.TOTAL_MEMORY + " bits." : "")});var time = now();var result = ffmpeg_run(Module);var totalTime = now() - time;postMessage({"type" : "stdout","data" : "Finished processing (took " + totalTime + "ms)"});postMessage({"type" : "done","data" : result,"time" : totalTime});}};postMessage({"type" : "ready"});'], {
     type: 'application/javascript'
   }));
-
   var worker = new Worker(blob);
+  // Worker now has the blob, meaning we can evict the generated script from local memory.
   URL.revokeObjectURL(blob);
   return worker;
 }
@@ -154,12 +158,15 @@ function PostBlob(blob) {
 var logsPreview = document.getElementById('logs-preview');
 
 function log(message) {
+  console.log(message);
+  /*
   var li = document.createElement('li');
   li.innerHTML = message;
   logsPreview.appendChild(li);
 
   li.tabIndex = 0;
   li.focus();
+  */
 }
 
 window.onbeforeunload = function () {
