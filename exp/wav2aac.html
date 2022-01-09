@@ -1,0 +1,86 @@
+<!--
+> Muaz Khan     - www.MuazKhan.com
+> MIT License   - www.WebRTC-Experiment.com/licence
+> Documentation - github.com/muaz-khan/Ffmpeg.js
+-->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>RecordRTC WAV to ACC using ffmpeg-asm.js</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+  <link rel="stylesheet" href="https://cdn.webrtc-experiment.com/style.css">
+
+  <style>
+    audio {
+      vertical-align: middle;
+    }
+
+    input {
+      border: 1px solid #d9d9d9;
+      border-radius: 1px;
+      font-size: 2em;
+      margin: .2em;
+      width: 30%;
+    }
+
+    p,
+    .inner {
+      padding: 1em;
+    }
+
+    li {
+      border-bottom: 1px solid rgb(189, 189, 189);
+      border-left: 1px solid rgb(189, 189, 189);
+      padding: .5em;
+    }
+
+    label {
+      display: inline-block;
+      width: 8em;
+    }
+  </style>
+  <script>
+    document.createElement('article');
+    document.createElement('footer');
+  </script>
+
+  <!-- script used for audio/video/gif recording -->
+  <script src="https://cdn.webrtc-experiment.com/RecordRTC.js"> </script>
+  <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+</head>
+
+<body>
+  <article>
+
+    <section class="experiment">
+      <h2 class="header">Logs</h2>
+      <ol id="logs-preview">
+        <li>
+          <a href="https://www.webrtc-experiment.com/RecordRTC/">RecordRTC</a> experiment converting WAV to ACC inside
+          the browser!
+        </li>
+      </ol>
+    </section>
+
+    <section class="experiment">
+      <h2 class="header">Record Audio and convert into "ACC" using <a
+          href="https://archive.org/download/ffmpeg_asm/ffmpeg_asm.js" download="ffmpeg-asm.js">ffmpeg-asm.js</a>!</h2>
+
+      <div class="inner">
+        <audio id="audio-preview" controls muted></audio>
+        <br>
+        <button id="record-audio">Record</button>
+        <button id="stop-recording-audio" disabled>Stop</button>
+        <br>
+      </div>
+    </section>
+    <script src="main.js"></script>
+  </article>
+</body>
+
+</html>
