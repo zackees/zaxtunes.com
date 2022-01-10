@@ -1,4 +1,6 @@
 const workerPath = 'https://archive.org/download/ffmpeg_asm/ffmpeg_asm.js';
+const TOTAL_MEMORY = 1073741824;
+
 console.log('ffmpeg-asm.js download started. It is about 18MB in size; please be patient!');
 
 importScripts(workerPath);
@@ -13,7 +15,13 @@ onmessage = function (event) {
   var message = event.data;
   if (message.type === "command") {
     //debugger;
-    var Module = { print: print, printErr: printErr, files: message.files || [], arguments: message.arguments || [], TOTAL_MEMORY: message.TOTAL_MEMORY || false };
+    const Module = {
+      print: print,
+      printErr: printErr,
+      files: message.files || [],
+      arguments: message.arguments || [],
+      TOTAL_MEMORY: message.TOTAL_MEMORY || TOTAL_MEMORY
+    };
     postMessage({ "type": "start", "data": Module.arguments.join(" ") });
     postMessage({ "type": "stdout", "data": "Received command: " + Module.arguments.join(" ") + ((Module.TOTAL_MEMORY) ? ".  Processing with " + Module.TOTAL_MEMORY + " bits." : "") });
     var time = now();

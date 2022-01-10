@@ -1,40 +1,34 @@
 let worker;
-const workerPath = 'https://archive.org/download/ffmpeg_asm/ffmpeg_asm.js';
-//const ffmpeg_args = '-i audio.wav -c:a aac -b:a 96k -strict experimental output.mp4';
-const ffmpeg_args = '-i audio.wav -c:a aac -strict experimental output.mp4';
-
-// for some reason the local path version of ffmpeg_asm.js doesn't work well!
-//var workerPath = 'ffmpeg_asm.js'
-//if(document.domain == 'localhost') {
-//	workerPath = location.href.replace(location.href.split('/').pop(), '') + 'ffmpeg_asm.js';
-//}
-var div_output = document.querySelector('#div_output');
-
 const log = console.log
 
-
-function processInWebWorker() {
-  var worker = new Worker("sw.js");
-  return worker;
-}
-
-function convertStreams(audioBlob) {
-  if (!worker) {
-
-    worker = processInWebWorker();
+function get_mime_type(filename) {
+  filename = filename.toLowerCase();
+  if (filename.endsWith("mp3")) {
+    return "audio/mp3";
+  } else if (filename.endsWith("mp4")) {
+    return "video/mp4";
+  } else {
+    alert("not suppported: " + filename);
   }
+}
+function ffmpeg_process(file_name, input_blob, ffmpeg_args, on_success, on_fail) {
+  file_name = encodeURI(file_name);
+  if (!worker) {
+    worker = new Worker("sw.js");
+  }
+  const full_cmd = `-i ${file_name} ${ffmpeg_args}`
   worker.postMessage({
     type: 'command',
-    arguments: ffmpeg_args.split(' '),
+    arguments: full_cmd.split(' '),
     files: [
       {
-        data: new Uint8Array(audioBlob),
-        name: "audio.wav"
+        data: new Uint8Array(input_blob),
+        name: file_name
       }
     ]
   });
 
-  worker.onmessage = function (event) {
+  worker.onmessage = function(event) {
     var message = event.data;
     if (message.type == "ready") {
       log(`${message.js_src} loaded.`);
@@ -46,32 +40,18 @@ function convertStreams(audioBlob) {
       log('ffmpeg started.');
     } else if (message.type == "done") {
       if (message.data.length === 0) {
-        alert("failed to convert audio");
-        console.log("failed to convert audio, reason: ", message);
+        on_fail("failed to convert, reason: " + JSON.stringify(message))
       } else {
-        log(JSON.stringify(message));
         const result = message.data[0];
-        log(JSON.stringify(result));
-        const blob = new File([result.data], 'test.mp3', {
-          type: 'audio/mp3'
+        if (result.data.byteLength == 0) {
+          on_fail("ffmpeg generated an empty file.");
+          return;
+        }
+        const blob = new File([result.data], result.name, {
+          type: get_mime_type(result.name)
         });
-        //log(JSON.stringify(blob));
-        PostBlob(blob);
+        on_success(blob);
       }
     }
   };
 }
-
-function PostBlob(blob) {
-  let src = URL.createObjectURL(blob);
-  var p = document.createElement('p');
-  p.innerHTML = `Download: <a href="${src}" target="_blank" download="out.mp3">out.mp3</a>`;
-  div_output.appendChild(p);
-  p.style.display = 'block';
-}
-
-
-
-window.onbeforeunload = function () {
-  document.querySelector('#record-audio').disabled = false;
-};

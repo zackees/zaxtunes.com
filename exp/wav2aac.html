@@ -5,7 +5,7 @@ Based on - github.com/muaz-khan/Ffmpeg.js
 <html lang="en">
 
 <head>
-  <title>RecordRTC WAV to ACC using ffmpeg-asm.js</title>
+  <title>Transcode media using ffmpeg-asm.js</title>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -13,33 +13,58 @@ Based on - github.com/muaz-khan/Ffmpeg.js
 </head>
 
 <body>
-  <article>
-    <section class="experiment">
-      <h2 class="header">Record Audio and convert into "ACC" using <a
-          href="https://archive.org/download/ffmpeg_asm/ffmpeg_asm.js" download="ffmpeg-asm.js">ffmpeg-asm.js</a>!</h2>
+  <h2 class="header">Transcode media using client side javascript (<a
+      href="https://archive.org/download/ffmpeg_asm/ffmpeg_asm.js" download="ffmpeg-asm.js">ffmpeg-asm.js</a>)!</h2>
+  <div>
+    <ol>
+      <li><label for="btn_load_audio">Upload Media:</label><input type="file" id="btn_load_audio" accept="audio/*,video/*,*.mkv"></input></li>
+      <li>ffmpeg args: <input type="text" id="txt_ffmpeg_cmd" size="80"
+        value="-c:a aac -b:a 96k -strict experimental output.mp3"></input></li>
+        <li><input type="button" id="btn_process" value="Run"></input></li>
+    </ol>
+    <img src="spinner.gif" id="img_spinner" style="visibility: hidden;"></img>
+  </div>
+  <div id="div_output">
+  </div>
+  <script src="main.js"></script>
+  <script>
+    const dom_btn_load_audio = document.getElementById("btn_load_audio");
+    const dom_div_output = document.getElementById("div_output");
+    const dom_btn_process = document.getElementById("btn_process");
+    const dom_txt_ffmpeg_cmd = document.getElementById("txt_ffmpeg_cmd");
+    const dom_img_spinner = document.getElementById("img_spinner");
+    dom_btn_process.disabled = true;
 
-      <div>
-        <label for="btn_load_audio">Upload Audio (*.wav):</label>
-        <input type="file" id="btn_load_audio" accept=".wav"></input></br>
-      </div>
+    function on_ffmpeg_success(output_file_blob) {
+      dom_img_spinner.style.visibility = "hidden";
+      let src = URL.createObjectURL(output_file_blob);
+      var p = document.createElement('p');
+      p.innerHTML = `Download: <a href="${src}" target="_blank" download="${output_file_blob.name}">${output_file_blob.name}</a>`;
+      dom_div_output.appendChild(p);
+      p.style.display = 'block';
+    }
 
-      <div id="div_output">
-      </div>
+    function on_ffmpeg_fail(msg) {
+      dom_img_spinner.style.visibility = "hidden";
+      alert(msg);
+    }
 
-    </section>
-    <script src="main.js"></script>
-    <script>
-      const dom_btn_load_audio = document.getElementById("btn_load_audio");
-      function load_audio_data(array_buffer) {
-        const uint8_array = new Uint8Array(array_buffer);
-        convertStreams(uint8_array);
-      }
-      dom_btn_load_audio.onchange = (evt) => {
-        const file = dom_btn_load_audio.files[0];
-        file.arrayBuffer().then(load_audio_data);
-      };
-    </script>
-  </article>
+    let ready_file = null;
+
+    // When an file is loaded then trigger the change.
+    dom_btn_load_audio.onchange = (evt) => {
+      dom_btn_process.disabled = false;
+      ready_file = dom_btn_load_audio.files[0];
+    };
+
+    dom_btn_process.onclick = () => {
+      const ffmpeg_args = dom_txt_ffmpeg_cmd.value;
+      dom_img_spinner.style.visibility = "visible";
+      ready_file.arrayBuffer().then(
+        (file_bytes) => (ffmpeg_process(ready_file.name, file_bytes, ffmpeg_args, on_ffmpeg_success, on_ffmpeg_fail))
+      );
+    };
+  </script>
 </body>
 
 </html>
