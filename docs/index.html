@@ -1,21 +1,150 @@
-<!--
-Based on - github.com/muaz-khan/Ffmpeg.js
--->
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE HTML>
+<html xml:lang="en" lang="en">
 
 <head>
-  <title>Zaxtunes</title>
-  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>Google Leaks</title>
+        <meta charset="utf-8" />
+        <meta name="description" content="Music">
+        <meta http-equiv="Cache-control" content="public">
+        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+
+        <style type=text/css>
+                li,
+                p {
+                        font: 12px Verdana, Helvetica, sans-serif;
+                }
+        </style>
+
 </head>
 
-<body>
-  <div>
-    <ol><a href="https://somafm.com/player/#/now-playing/groovesalad" target="_blank">Groove Salad</a></ol>
+<script>
+        // main.js
+        if ("serviceWorker" in navigator) {
+                // Register service worker
+                navigator.serviceWorker.register(new URL("./sw.js", import.meta.url)).then(
+                        function (registration) {
+                                console.log("COOP/COEP Service Worker registered", registration.scope);
+                                // If the registration is active, but it's not controlling the page
+                                if (registration.active && !navigator.serviceWorker.controller) {
+                                        window.location.reload();
+                                }
+                        },
+                        function (err) {
+                                console.log("COOP/COEP Service Worker failed to register", err);
+                        }
+                );
+        } else {
+                console.warn("Cannot register a service worker");
+        }
+</script>
+
+<body class="is-preload">
+        <div id="wrapper">
+
+          <div>
+		    <ol><a href="https://somafm.com/player/#/now-playing/groovesalad" target="_blank">Groove Salad</a></ol>
   </div>
+
+                <div id="main" width="100%">
+                </div>
+
+                <script src="ogv_js/ogv.js"></script>
+
+                <script>
+                        const data = [
+                                "Tryptich - Anthology Mix.ogg",
+                                "PSA Presents_ All Play, All Night.ogg",
+                                "Led Jewelry Soundtrack crowdfunding.mp3",
+                                "Sisterlove -The Hypnotist (etaM).mp3",
+                                "DaftPunkLikeSong_01_v3.mp3",
+                                "burning_man_robot_heart.mp3",
+                                "Nox Vahn & Marsh - Come Together (Official Music Video).mp3"
+                        ];
+                        function audio_type(audio_file) {
+                                if (audio_file.indexOf(".mp3") != -1) {
+                                        return "audio/mpeg";
+                                } else if (audio_file.indexOf(".ogg") != -1) {
+                                        return "audio/ogg";
+                                } else {
+                                        alert("Unknown file type " + audio_file);
+                                        return "audio/mpeg";
+                                }
+                        }
+                        function gen_audio_html(audio_file) {
+                                const audio_url = `./${encodeURIComponent(audio_file)}`
+                                const type = audio_type(audio_file);  // Default.
+                                return `
+                                <li>
+                                        <a href="${audio_url}">${audio_file}</a><br>
+                                        <input type="button" value="play" class="play_audio" src="${audio_url}"></input>
+                                        <input type="button" value="pause" class="pause_audio" src="${audio_url}"></input>
+                                        <audio controls preload="none" style="width: 100%;">
+                                                <source src="${audio_url}" type="${type}">
+                                                Your browser does not support the audio element.
+                                        </audio>
+                                </li>
+                                `
+                        }
+                        let out_str = "<ol>";
+                        for (let i = 0; i < data.length; ++i) {
+                                let audio_file = data[i];
+                                out_str += gen_audio_html(audio_file);
+                        }
+                        out_str += "</ol>"
+                        document.getElementById("main").innerHTML = out_str;
+                        let ogv_player = new OGVPlayer({
+                                forceWebGL: true
+                        });
+                        let mp3_player = new Audio('');
+                        let player = {};
+                        player.pause = function () {
+                                mp3_player.pause();
+                                ogv_player.pause();
+                        }
+                        player.play = function () {
+                                player.pause();
+                                const src = player.src.toLowerCase();
+                                if (src.indexOf(".ogg") != -1) {
+                                        ogv_player.src = player.src;
+                                        ogv_player.play();
+                                        return;
+                                }
+                                if (src.indexOf(".mp3") != -1) {
+                                        console.log("mp3 player")
+                                        mp3_player.src = player.src;
+                                        mp3_player.load();
+                                        mp3_player.play();
+                                        return;
+                                }
+                                alert("unknown file type " + src);
+                        }
+
+                        elements = document.getElementsByClassName("play_audio");
+                        for (let i = 0; i < elements.length; ++i) {
+                                elem = elements[i];
+                                const src = elem.getAttribute("src");
+                                console.log(src);
+                                function do_play_action() {
+                                        if (player.src !== src) {
+                                                player.src = src;
+                                                player.play();
+                                        } else {
+                                                player.play();  // resume?
+                                        }
+                                }
+                                elem.onclick = do_play_action;
+                        }
+
+                        elements = document.getElementsByClassName("pause_audio");
+                        for (let i = 0; i < elements.length; ++i) {
+                                elem = elements[i];
+                                function do_play_action() {
+                                        player.pause();
+                                }
+                                elem.onclick = do_play_action;
+                        }
+                </script>
 </body>
+
 
 </html>
